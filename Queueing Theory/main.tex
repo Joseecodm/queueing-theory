@@ -1,0 +1,62 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[american]{babel}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\title{Queueing Theory}
+\author{José Manuel Cortes Cerón}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+The M/M/1 and M/M/S models are fundamental in Queueing Theory. Both assume:
+\begin{itemize}
+  \item Arrivals follow a Poisson process (exponential interarrival times).
+  \item Service times are exponentially distributed.
+  \item An infinite-capacity queue with FIFO discipline.
+\end{itemize}
+
+\section{M/M/1 Model}
+\subsection*{Parameters}
+\begin{itemize}
+  \item \(\lambda\): arrival rate (customers per time unit).
+  \item \(\mu\): service rate (customers per time unit).
+\end{itemize}
+
+\subsection*{Formulas}
+\begin{align*}
+\rho    &= \frac{\lambda}{\mu},                    &\text{(utilization)}\\
+P_{0}   &= 1 - \rho,                               &\text{(empty system probability)}\\
+L_{s}   &= \frac{\lambda}{\mu - \lambda},          &\text{(avg.\ number in system)}\\
+W_{s}   &= \frac{1}{\mu - \lambda},                &\text{(avg.\ time in system)}\\
+L_{q}   &= \frac{\lambda^2}{\mu\,(\mu - \lambda)}, &\text{(avg.\ number in queue)}\\
+W_{q}   &= \frac{\lambda}{\mu\,(\mu - \lambda)},   &\text{(avg.\ waiting time in queue)}\\
+P_{n}   &= (1 - \rho)\,\rho^n,                     &\text{(probability of \(n\) in system)}
+\end{align*}
+
+\section{M/M/S Model}
+\subsection*{Parameters}
+\begin{itemize}
+  \item \(\lambda\): arrival rate (customers per time unit).
+  \item \(\mu\): service rate per server (customers per time unit).
+  \item \(S\): number of servers.
+\end{itemize}
+
+\subsection*{Formulas}
+\begin{align*}
+\rho    &= \frac{\lambda}{S\,\mu},\\
+P_{0}   &= \left[\sum_{n=0}^{S-1}\frac{(\lambda/\mu)^n}{n!}
+          + \frac{(\lambda/\mu)^S}{S!\,(1-\rho)}\right]^{-1},\\
+L_{q}   &= \frac{(\lambda/\mu)^S\,\rho}{S!\,(1-\rho)^2}\;P_{0},\\
+L_{s}   &= L_{q} + \frac{\lambda}{\mu},\\
+W_{q}   &= \frac{L_{q}}{\lambda},\\
+W_{s}   &= W_{q} + \frac{1}{\mu}.
+\end{align*}
+
+\end{document}
