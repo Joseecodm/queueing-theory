@@ -1,10 +1,14 @@
 from gui import QueueApp
 
 def main():
+feature/add-user-interface
+    """Entry point for the application."""
+=======
     """
     Main function to start the Queueing Theory Calculator application.
     Initializes and runs the graphical user interface.
     """
+main
     app = QueueApp()
     app.mainloop()
 
