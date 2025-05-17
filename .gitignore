@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller build
+build/
+dist/
+
+# Spec file (opcional, si no quieres versionarlo)
+*.spec
+
+# MacOS
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# LaTeX aux/backup
+*.aux
+*.log
+*.toc
+*.out
+
+# PDF output (si no quieres versionar)
+*.pdf
