@@ -27,7 +27,4 @@ This tool applies classic queueing theory formulas to help you:
 
 ## Installation
 
-1. **Clone the repo**  
-   ```bash
-   git clone https://github.com/yourusername/queueing-theory-calculator.git
-   cd queueing-theory-calculator
+You'll see the release with the executable on the section "Releases" in this project
