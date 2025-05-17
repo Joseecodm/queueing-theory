@@ -1,6 +1,5 @@
 import math
 
-# models.py
 # Simplified M/M/1 and M/M/S queueing models without unit conversion
 
 # By: José Manuel Cortes Cerón - TI Student - ITSOEH

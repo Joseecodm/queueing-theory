@@ -1,7 +1,7 @@
 from gui import QueueApp
 
 def main():
-    """Punto de entrada de la aplicación."""
+    """Entry point for the application."""
     app = QueueApp()
     app.mainloop()
 

@@ -6,7 +6,7 @@ class QueueApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Queueing Theory Calculator")
-        self.geometry("800x600")
+        self.geometry("600x600")
         self.minsize(600, 400)
         self._build_frames()
         self.show_frame("MainMenu")
@@ -266,3 +266,4 @@ class ConverterFrame(ttk.Frame):
             self.lbl_result.config(text="")
         except ValueError:
             messagebox.showerror("Error", "Enter a valid number for clients per hour")
+        
