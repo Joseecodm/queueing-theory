@@ -1,48 +1,54 @@
 import math
 
-# This module contains functions to calculate metrics for M/M/1 and M/M/s queueing models.
-# The M/M/1 model is a single-server queueing system with Poisson arrivals and exponential service times.
-# The M/M/s model is a multi-server queueing system with Poisson arrivals and exponential service times.
+# This module contains functions to calculate metrics for M/M/1 and M/M/S queueing models.
+# Supports optional unit conversion between per-minute and per-hour rates.
 
 # By: José Manuel Cortes Cerón - TI Student - ITSOEH
 
-def mm1(lambda_, mu, n=None):
+def mm1(lambda_, mu, n=None, lam_in_minutes=False, mu_in_minutes=False):
     """
-    Calculates the metrics for the M/M/1 queueing model:
-      ρ    = λ/μ
-      P0   = 1 − ρ
-      Ls   = λ/(μ − λ)
-      Ws   = 1/(μ − λ)
-      Lq   = λ²/[μ(μ − λ)]
-      Wq   = λ/[μ(μ − λ)]
-      Pn   = (1 − ρ) ρ^n  (if n is not None)
-    Args:
-      lambda_ (float): arrival rate λ
-      mu      (float): service rate μ
-      n       (int, optional): number of customers for Pn
-    Returns:
-      dict with keys 'rho','P0','Ls','Ws','Lq','Wq' and, if n is given, 'Pn'.
-    """
+    Calculates the metrics for the M/M/1 queueing model with optional unit conversion.
 
-    # Check if the system is stable: λ must be less than μ (ρ < 1)
+    If lam_in_minutes=True, lambda_ is interpreted as arrivals per minute and converted to per hour.
+    If mu_in_minutes=True, mu is interpreted as services per minute and converted to per hour.
+
+    Metrics:
+      rho = λ/μ
+      P0  = 1 − rho
+      Ls  = λ/(μ − λ)
+      Ws  = 1/(μ − λ)
+      Lq  = λ² / [μ(μ − λ)]
+      Wq  = λ / [μ(μ − λ)]
+      Pn  = (1 − rho)·rho^n  (if n is not None)
+
+    Args:
+      lambda_ (float): arrival rate (per hour or per minute)
+      mu      (float): service rate (per hour or per minute)
+      n       (int, optional): number of customers for Pn
+      lam_in_minutes (bool): if True, convert lambda_ from per-minute to per-hour
+      mu_in_minutes  (bool): if True, convert mu from per-minute to per-hour
+
+    Returns:
+      dict with keys 'rho', 'P0', 'Ls', 'Ws', 'Lq', 'Wq' and, if n given, 'Pn'.
+    """
+    # Convert units if specified
+    if lam_in_minutes:
+        lambda_ = lambda_ * 60.0
+    if mu_in_minutes:
+        mu = mu * 60.0
+
+    # Check stability: lambda_ < mu
     if lambda_ >= mu:
         raise ValueError("λ must be less than μ for a stable system (ρ<1).")
 
-    # Calculate system utilization (ρ)
     rho = lambda_ / mu
-    # Calculate the probability of zero customers in the system (P0)
     P0  = 1 - rho
-    # Calculate the average number of customers in the system (Ls)
     Ls  = lambda_ / (mu - lambda_)
-    # Calculate the average time a customer spends in the system (Ws)
-    Ws  = 1.0  / (mu - lambda_)
-    # Calculate the average number of customers in the queue (Lq)
+    Ws  = 1.0 / (mu - lambda_)
     Lq  = lambda_**2 / (mu * (mu - lambda_))
-    # Calculate the average time a customer spends waiting in the queue (Wq)
-    Wq  = lambda_      / (mu * (mu - lambda_))
+    Wq  = lambda_ / (mu * (mu - lambda_))
 
-    # Store results in a dictionary
-    resultados = {
+    results = {
         'rho': rho,
         'P0':  P0,
         'Ls':  Ls,
@@ -51,64 +57,65 @@ def mm1(lambda_, mu, n=None):
         'Wq':  Wq,
     }
 
-    # If requested, calculate the probability of having exactly n customers in the system (Pn)
     if n is not None:
-        if n < 0 or not isinstance(n, int):
-            raise ValueError("n must be an integer ≥ 0")
+        if not isinstance(n, int) or n < 0:
+            raise ValueError("n must be a non-negative integer.")
         Pn = (1 - rho) * (rho**n)
-        resultados['Pn'] = Pn
+        results['Pn'] = Pn
 
-    return resultados
+    return results
 
-def mms(lambda_, mu, s):
+
+def mms(lambda_, mu, s, lam_in_minutes=False, mu_in_minutes=False):
     """
-    Calculates the metrics for the M/M/S queueing model:
-      ρ   = λ / (s·μ)
-      P0  = [ ∑_{n=0}^{s-1} (λ/μ)^n / n!  +  (λ/μ)^s / (s!·(1−ρ)) ]⁻¹
-      Lq  = ( (λ/μ)^s · ρ ) / ( s!·(1−ρ)^2 ) · P0
+    Calculates the metrics for the M/M/S queueing model with optional unit conversion.
+
+    If lam_in_minutes=True, lambda_ is interpreted as arrivals per minute and converted to per hour.
+    If mu_in_minutes=True, mu is interpreted as services per minute and converted to per hour.
+
+    Metrics:
+      rho = λ/(s·μ)
+      P0  = [ ∑_{n=0}^{s-1} (λ/μ)^n/n!  +  (λ/μ)^s/(s!·(1−ρ)) ]⁻¹
+      Lq  = ( (λ/μ)^s·ρ ) / [s!·(1−ρ)^2] · P0
       Ls  = Lq + λ/μ
       Wq  = Lq / λ
       Ws  = Wq + 1/μ
 
     Args:
-      lambda_ (float): arrival rate λ
-      mu      (float): service rate per server μ
+      lambda_ (float): arrival rate (per hour or per minute)
+      mu      (float): service rate per server (per hour or per minute)
       s       (int):   number of servers
+      lam_in_minutes (bool): if True, convert lambda_ from per-minute to per-hour
+      mu_in_minutes  (bool): if True, convert mu from per-minute to per-hour
 
     Returns:
-      dict with keys 'rho','P0','Lq','Ls','Wq','Ws'
+      dict with keys 'rho', 'P0', 'Lq', 'Ls', 'Wq', 'Ws'.
     """
+    # Convert units if specified
+    if lam_in_minutes:
+        lambda_ = lambda_ * 60.0
+    if mu_in_minutes:
+        mu = mu * 60.0
 
-    # Basic validation for input parameters
     if lambda_ <= 0 or mu <= 0:
         raise ValueError("λ and μ must be greater than 0.")
     if not isinstance(s, int) or s < 1:
         raise ValueError("s must be a positive integer (number of servers).")
 
-    # Calculate system utilization (ρ)
     rho = lambda_ / (s * mu)
     if rho >= 1:
         raise ValueError("Unstable system: λ/(s·μ) must be < 1.")
 
-    # a is the traffic intensity (λ/μ)
     a = lambda_ / mu
-
-    # Calculate P0: probability that there are zero customers in the system
     sum_terms = sum((a**n) / math.factorial(n) for n in range(s))
     last_term = (a**s) / (math.factorial(s) * (1 - rho))
     P0 = 1.0 / (sum_terms + last_term)
 
-    # Calculate queue and system metrics
-    # Lq: average number of customers in the queue
     Lq = ((a**s) * rho) / (math.factorial(s) * (1 - rho)**2) * P0
-    # Ls: average number of customers in the system
     Ls = Lq + a
-    # Wq: average waiting time in the queue
     Wq = Lq / lambda_
-    # Ws: average time a customer spends in the system
     Ws = Wq + 1.0 / mu
 
-    # Return results as a dictionary
     return {
         'rho': rho,
         'P0':  P0,
