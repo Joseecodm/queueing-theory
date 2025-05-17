@@ -1,45 +1,32 @@
 import math
 
-# This module contains functions to calculate metrics for M/M/1 and M/M/S queueing models.
-# Supports optional unit conversion between per-minute and per-hour rates.
+# models.py
+# Simplified M/M/1 and M/M/S queueing models without unit conversion
 
 # By: José Manuel Cortes Cerón - TI Student - ITSOEH
 
-def mm1(lambda_, mu, n=None, lam_in_minutes=False, mu_in_minutes=False):
+def mm1(lambda_, mu, n=None):
     """
-    Calculates the metrics for the M/M/1 queueing model with optional unit conversion.
-
-    If lam_in_minutes=True, lambda_ is interpreted as arrivals per minute and converted to per hour.
-    If mu_in_minutes=True, mu is interpreted as services per minute and converted to per hour.
-
-    Metrics:
+    Calculates metrics for the M/M/1 queueing model:
       rho = λ/μ
       P0  = 1 − rho
       Ls  = λ/(μ − λ)
       Ws  = 1/(μ − λ)
       Lq  = λ² / [μ(μ − λ)]
       Wq  = λ / [μ(μ − λ)]
-      Pn  = (1 − rho)·rho^n  (if n is not None)
+      Pn  = (1 − rho)·rho^n  (if n is provided)
 
     Args:
-      lambda_ (float): arrival rate (per hour or per minute)
-      mu      (float): service rate (per hour or per minute)
-      n       (int, optional): number of customers for Pn
-      lam_in_minutes (bool): if True, convert lambda_ from per-minute to per-hour
-      mu_in_minutes  (bool): if True, convert mu from per-minute to per-hour
+      lambda_ (float): arrival rate λ (clients per hour)
+      mu      (float): service rate μ (clients per hour)
+      n       (int, optional): for Pn calculation
 
     Returns:
-      dict with keys 'rho', 'P0', 'Ls', 'Ws', 'Lq', 'Wq' and, if n given, 'Pn'.
+      dict with keys 'rho', 'P0', 'Ls', 'Ws', 'Lq', 'Wq', and 'Pn' if n provided.
     """
-    # Convert units if specified
-    if lam_in_minutes:
-        lambda_ = lambda_ * 60.0
-    if mu_in_minutes:
-        mu = mu * 60.0
-
-    # Check stability: lambda_ < mu
+    # Stability check
     if lambda_ >= mu:
-        raise ValueError("λ must be less than μ for a stable system (ρ<1).")
+        raise ValueError("Unstable system: arrival rate (λ) must be less than service rate (μ).")
 
     rho = lambda_ / mu
     P0  = 1 - rho
@@ -50,61 +37,47 @@ def mm1(lambda_, mu, n=None, lam_in_minutes=False, mu_in_minutes=False):
 
     results = {
         'rho': rho,
-        'P0':  P0,
-        'Ls':  Ls,
-        'Ws':  Ws,
-        'Lq':  Lq,
-        'Wq':  Wq,
+        'P0' : P0,
+        'Ls' : Ls,
+        'Ws' : Ws,
+        'Lq' : Lq,
+        'Wq' : Wq,
     }
 
     if n is not None:
         if not isinstance(n, int) or n < 0:
             raise ValueError("n must be a non-negative integer.")
-        Pn = (1 - rho) * (rho**n)
-        results['Pn'] = Pn
+        results['Pn'] = (1 - rho) * (rho**n)
 
     return results
 
 
-def mms(lambda_, mu, s, lam_in_minutes=False, mu_in_minutes=False):
+def mms(lambda_, mu, s):
     """
-    Calculates the metrics for the M/M/S queueing model with optional unit conversion.
-
-    If lam_in_minutes=True, lambda_ is interpreted as arrivals per minute and converted to per hour.
-    If mu_in_minutes=True, mu is interpreted as services per minute and converted to per hour.
-
-    Metrics:
+    Calculates metrics for the M/M/S queueing model:
       rho = λ/(s·μ)
-      P0  = [ ∑_{n=0}^{s-1} (λ/μ)^n/n!  +  (λ/μ)^s/(s!·(1−ρ)) ]⁻¹
-      Lq  = ( (λ/μ)^s·ρ ) / [s!·(1−ρ)^2] · P0
+      P0  = [∑_{n=0}^{s-1}(λ/μ)^n/n! + (λ/μ)^s/(s!·(1−rho))]⁻¹
+      Lq  = [(λ/μ)^s·rho] / [s!·(1−rho)^2] · P0
       Ls  = Lq + λ/μ
       Wq  = Lq / λ
       Ws  = Wq + 1/μ
 
     Args:
-      lambda_ (float): arrival rate (per hour or per minute)
-      mu      (float): service rate per server (per hour or per minute)
+      lambda_ (float): arrival rate λ (clients per hour)
+      mu      (float): service rate μ (clients per hour)
       s       (int):   number of servers
-      lam_in_minutes (bool): if True, convert lambda_ from per-minute to per-hour
-      mu_in_minutes  (bool): if True, convert mu from per-minute to per-hour
 
     Returns:
       dict with keys 'rho', 'P0', 'Lq', 'Ls', 'Wq', 'Ws'.
     """
-    # Convert units if specified
-    if lam_in_minutes:
-        lambda_ = lambda_ * 60.0
-    if mu_in_minutes:
-        mu = mu * 60.0
-
     if lambda_ <= 0 or mu <= 0:
-        raise ValueError("λ and μ must be greater than 0.")
+        raise ValueError("Arrival and service rates must be positive.")
     if not isinstance(s, int) or s < 1:
-        raise ValueError("s must be a positive integer (number of servers).")
+        raise ValueError("Number of servers (s) must be a positive integer.")
 
     rho = lambda_ / (s * mu)
     if rho >= 1:
-        raise ValueError("Unstable system: λ/(s·μ) must be < 1.")
+        raise ValueError("Unstable system: load (λ/(s·μ)) must be less than 1.")
 
     a = lambda_ / mu
     sum_terms = sum((a**n) / math.factorial(n) for n in range(s))
@@ -118,9 +91,9 @@ def mms(lambda_, mu, s, lam_in_minutes=False, mu_in_minutes=False):
 
     return {
         'rho': rho,
-        'P0':  P0,
-        'Lq':  Lq,
-        'Ls':  Ls,
-        'Wq':  Wq,
-        'Ws':  Ws,
+        'P0' : P0,
+        'Lq' : Lq,
+        'Ls' : Ls,
+        'Wq' : Wq,
+        'Ws' : Ws,
     }
